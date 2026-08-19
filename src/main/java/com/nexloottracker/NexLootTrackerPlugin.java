@@ -242,7 +242,7 @@ public class NexLootTrackerPlugin extends Plugin
 			return;
 		}
 
-		contributionTracker.onHitsplatApplied(event, client, NEX_NPC_IDS);
+		contributionTracker.onHitsplatApplied(event, client);
 	}
 
 	@Subscribe
@@ -779,7 +779,7 @@ public class NexLootTrackerPlugin extends Plugin
 		final Double contribution = contributionTracker.getContributionPercent();
 		if (contribution == null)
 		{
-			log.info("Kill contribution unavailable: no Nex damage tracked for this kill");
+			log.info("Kill contribution unavailable: no Nex encounter damage tracked for this kill");
 		}
 
 		return contribution;

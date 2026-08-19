@@ -3,18 +3,36 @@ package com.nexloottracker;
 import net.runelite.api.Actor;
 import net.runelite.api.Client;
 import net.runelite.api.Hitsplat;
+import net.runelite.api.HitsplatID;
 import net.runelite.api.NPC;
 import net.runelite.api.Player;
 import net.runelite.api.events.HitsplatApplied;
+import net.runelite.api.gameval.NpcID;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Tracks local and total damage dealt to Nex during the current kill.
+ * Tracks local and total contribution damage during the current Nex kill.
  * Mirrors DPS Counter boss damage accounting without reading that plugin directly.
  */
 public class NexKillContributionTracker
 {
+	private static final Set<Integer> CONTRIBUTION_NPC_IDS = new HashSet<>(Arrays.asList(
+		NpcID.NEX,
+		NpcID.NEX_SPAWNING,
+		NpcID.NEX_SOULSPLIT,
+		NpcID.NEX_DEFLECT,
+		NpcID.NEX_DYING,
+		NpcID.NEX_SMOKEMAGE,
+		NpcID.NEX_SHADOWMAGE,
+		NpcID.NEX_BLOODMAGE,
+		NpcID.NEX_ICEMAGE,
+		NpcID.NEX_PRISON_BLOOD_REAVER,
+		NpcID.NEX_PRISON_BLOOD_REAVER_BOSS
+	));
+
 	private int localDamage;
 	private int totalDamage;
 
@@ -24,7 +42,7 @@ public class NexKillContributionTracker
 		totalDamage = 0;
 	}
 
-	public void onHitsplatApplied(HitsplatApplied event, Client client, Set<Integer> nexNpcIds)
+	public void onHitsplatApplied(HitsplatApplied event, Client client)
 	{
 		final Actor actor = event.getActor();
 		if (!(actor instanceof NPC))
@@ -32,13 +50,13 @@ public class NexKillContributionTracker
 			return;
 		}
 
-		if (!nexNpcIds.contains(((NPC) actor).getId()))
+		if (!CONTRIBUTION_NPC_IDS.contains(((NPC) actor).getId()))
 		{
 			return;
 		}
 
 		final Hitsplat hitsplat = event.getHitsplat();
-		if (hitsplat == null)
+		if (hitsplat == null || hitsplat.getHitsplatType() == HitsplatID.HEAL)
 		{
 			return;
 		}
