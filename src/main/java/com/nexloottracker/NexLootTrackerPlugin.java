@@ -96,6 +96,19 @@ public class NexLootTrackerPlugin extends Plugin
 	private static final Pattern MVP_NAMED_PATTERN = Pattern.compile("^The MVP for this fight was:?\\s*(.+?)\\.?$");
 	private static final Pattern MVP_LEGACY_PATTERN = Pattern.compile("^(.+?) dealt the most damage to Nex\\.?$");
 	private static final Pattern PET_PATTERN = Pattern.compile("(.+?) (?:has )?received a drop: Nexling");
+	private static final Pattern FIRST_PET_PATTERN = Pattern.compile(
+		"^(?:You have a funny feeling like you're being followed|"
+			+ "You feel something weird sneaking into your backpack)\\.?$",
+		Pattern.CASE_INSENSITIVE
+	);
+	private static final Pattern DUPLICATE_PET_PATTERN = Pattern.compile(
+		"^You have a funny feeling like you would have been followed\\.\\.\\.$",
+		Pattern.CASE_INSENSITIVE
+	);
+	private static final Pattern UNTRADEABLE_NEXLING_PATTERN = Pattern.compile(
+		"^Untradeable drop:\\s*Nexling\\.?$",
+		Pattern.CASE_INSENSITIVE
+	);
 
 	@Inject
 	private Client client;
@@ -357,6 +370,12 @@ public class NexLootTrackerPlugin extends Plugin
 
 		if (handleMvpMessage(message, playerName))
 		{
+			return;
+		}
+
+		if (isOwnNexlingMessage(message))
+		{
+			handlePetDrop(playerName, playerName);
 			return;
 		}
 
@@ -925,7 +944,30 @@ public class NexLootTrackerPlugin extends Plugin
 			|| MVP_NAMED_PATTERN.matcher(message).matches()
 			|| MVP_LEGACY_PATTERN.matcher(message).matches()
 			|| UNIQUE_DROP_PATTERN.matcher(message).find()
-			|| PET_PATTERN.matcher(message).find();
+			|| PET_PATTERN.matcher(message).find()
+			|| isOwnNexlingMessage(message);
+	}
+
+	private boolean isOwnNexlingMessage(String message)
+	{
+		return isUntradeableNexlingMessage(message)
+			|| (currentKill != null
+				&& (isFirstPetMessage(message) || isDuplicatePetMessage(message)));
+	}
+
+	static boolean isFirstPetMessage(String message)
+	{
+		return message != null && FIRST_PET_PATTERN.matcher(message).matches();
+	}
+
+	static boolean isDuplicatePetMessage(String message)
+	{
+		return message != null && DUPLICATE_PET_PATTERN.matcher(message).matches();
+	}
+
+	static boolean isUntradeableNexlingMessage(String message)
+	{
+		return message != null && UNTRADEABLE_NEXLING_PATTERN.matcher(message).matches();
 	}
 
 	private boolean isNexNpcNearby()
