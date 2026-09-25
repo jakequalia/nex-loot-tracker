@@ -86,7 +86,7 @@ public class NexLootTrackerPlugin extends Plugin
 		NpcID.NEX_DYING
 	));
 
-	private static final Pattern KILL_COUNT_PATTERN = Pattern.compile("Your Nex kill count is:?\\s*(\\d+)\\.");
+	private static final Pattern KILL_COUNT_PATTERN = Pattern.compile("Your Nex kill count is:?\\s*([\\d,]+)\\.");
 	private static final Pattern FIGHT_DURATION_PATTERN = Pattern.compile(
 		"Fight duration:\\s*(\\d+(?::\\d{2}){1,2})",
 		Pattern.CASE_INSENSITIVE
@@ -343,7 +343,7 @@ public class NexLootTrackerPlugin extends Plugin
 			final NexLootTracker kill = getOrCreateCurrentKill();
 			kill.setLoggedIn(true);
 			kill.setKillComplete(true);
-			kill.setCompletionCount(Integer.parseInt(matcher.group(1)));
+			kill.setCompletionCount(parseKillCount(matcher.group(1)));
 			kill.setTeamSize(getTeamSize());
 			kill.setAccountHash(client.getAccountHash());
 			kill.setProfileType(String.valueOf(RuneScapeProfileType.getCurrent(client)));
@@ -760,6 +760,14 @@ public class NexLootTrackerPlugin extends Plugin
 			contribution,
 			contributionTracker.getLocalDamage(),
 			contributionTracker.getTotalDamage());
+	}
+
+	/**
+	 * Parses kill counts from chat, which are comma-formatted at 1,000 and above.
+	 */
+	static int parseKillCount(String killCount)
+	{
+		return Integer.parseInt(killCount.replace(",", ""));
 	}
 
 	/**
